@@ -1,8 +1,8 @@
 let map;
 let startMarker;
 let markers = [];
-let startLocation;
-let locations = [];
+let startLocation; // { coords: [lat, lon], name: "住所", displayName: "表示名" }
+let locations = []; // [{ coords: [lat, lon], name: "住所", displayName: "表示名", index: i }, ...]
 let activeInputId = null; // 追加
 let routingControls = []; // 追加
 
@@ -24,7 +24,8 @@ function initMap() {
 
     // 地図クリック時の処理
     map.on('click', (event) => {
-        if (activeInputId) {
+        // 住所入力欄 (startLocationInput または locationInputX) がアクティブな場合のみ
+        if (activeInputId && (activeInputId === 'startLocationInput' || activeInputId.startsWith('locationInput'))) {
             // 逆ジオコーディング
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${event.latlng.lat}&lon=${event.latlng.lng}`)
                 .then(response => response.json())
@@ -60,28 +61,29 @@ function searchRoute() {
     locations = []; // 場所データ配列をクリア
 
     const startAddress = document.getElementById('startLocationInput').value;
+    const startDisplayName = document.getElementById('startDisplayNameInput').value;
     const locationInputs = [];
     for (let i = 1; i <= 15; i++) { // 10 から 15 に変更
-        const locationInput = document.getElementById(`locationInput${i}`).value;
-        if (locationInput) {
-            locationInputs.push({ address: locationInput, index: i }); // 場所名とインデックスを保存
+        const addressInput = document.getElementById(`locationInput${i}`).value;
+        const displayNameInput = document.getElementById(`displayNameInput${i}`).value;
+        if (addressInput) { // 住所が入力されている場合のみ処理
+            locationInputs.push({ address: addressInput, displayName: displayNameInput, index: i }); // 表示名も保存
         }
     }
 
     // 住所から緯度経度を取得
     const geocodePromises = [];
     if (startAddress) {
-        geocodePromises.push(geocodeAddress(startAddress).then(location => {
-            if (location) {
-                startLocation = location;
-                //addMarker(location); // 削除
+        geocodePromises.push(geocodeAddress(startAddress).then(locationCoords => {
+            if (locationCoords) {
+                startLocation = { coords: locationCoords, name: startAddress, displayName: startDisplayName }; // 出発地点情報
             }
         }));
     }
     locationInputs.forEach(locationInput => {
-        geocodePromises.push(geocodeAddress(locationInput.address).then(location => {
-            if (location) {
-                locations.push({ coords: location, name: locationInput.address, index: locationInput.index }); // 座標と名前を保存
+        geocodePromises.push(geocodeAddress(locationInput.address).then(locationCoords => {
+            if (locationCoords) {
+                locations.push({ coords: locationCoords, name: locationInput.address, displayName: locationInput.displayName, index: locationInput.index }); // 座標と名前、表示名を保存
             }
         }));
     });
@@ -90,7 +92,7 @@ function searchRoute() {
         if (startLocation && locations.length > 0) {
             calculateAndDisplayRoutes();
         } else {
-            alert('出発地点と到着地点を入力してください。');
+            alert('出発地点と、少なくとも1つの到着地点の住所を入力してください。');
         }
     });
 }
@@ -102,17 +104,18 @@ function geocodeAddress(address) {
             if (data.length > 0) {
                 return [data[0].lat, data[0].lon];
             } else {
-                alert('住所が見つかりませんでした。');
+                alert(`住所が見つかりませんでした: ${address}`);
                 return null;
             }
         });
 }
 
-function addMarker(location, icon = null) {
-    const markerOptions = icon ? { icon: icon } : {};
-    const marker = L.marker(location, markerOptions).addTo(map);
-    markers.push(marker);
-}
+// マーカー追加関数は calculateAndDisplayRoutes 内で直接行うため不要に
+// function addMarker(location, icon = null) {
+//     const markerOptions = icon ? { icon: icon } : {};
+//     const marker = L.marker(location, markerOptions).addTo(map);
+//     markers.push(marker);
+// }
 
 function calculateAndDisplayRoutes() {
     if (!startLocation) {
@@ -125,13 +128,13 @@ function calculateAndDisplayRoutes() {
     distanceList.innerHTML = ''; // clear previous distances
 
     // 出発地点のマーカーを追加
-    const startLocationName = document.getElementById('startLocationInput').value; // 出発地点名を取得
-    const startMarker = L.marker(startLocation, redIcon).addTo(map); // マーカーを再作成
-    startMarker.bindTooltip(`${startLocationName}<br>出発地点`, { permanent: true }); // ツールチップを追加
+    const startTooltipName = startLocation.displayName || startLocation.name; // 表示名優先
+    const startMarker = L.marker(startLocation.coords, { icon: redIcon }).addTo(map); // アイコン指定方法修正
+    startMarker.bindTooltip(`${startTooltipName}<br>出発地点`, { permanent: true }); // ツールチップを追加
     markers.push(startMarker);
 
-    locations.forEach(location => { // location は { coords, name } オブジェクト
-        const waypoints = [L.latLng(startLocation[0], startLocation[1]), L.latLng(location.coords[0], location.coords[1])];
+    locations.forEach(location => { // location は { coords, name, displayName, index } オブジェクト
+        const waypoints = [L.latLng(startLocation.coords[0], startLocation.coords[1]), L.latLng(location.coords[0], location.coords[1])];
 
         const routingControl = L.Routing.control({
             waypoints: waypoints,
@@ -147,9 +150,10 @@ function calculateAndDisplayRoutes() {
                 const totalDistance = routes[0].summary.totalDistance;
 
                 const distanceKm = (totalDistance / 1000).toFixed(2);
+                const tooltipName = location.displayName || location.name; // 表示名優先
 
                 const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
-                marker.bindTooltip(`${location.name}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
+                marker.bindTooltip(`${tooltipName}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
                 markers.push(marker);
 
                 const li = document.createElement('li');

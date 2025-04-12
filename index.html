@@ -2,9 +2,24 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>移動距離計算アプリ</title>
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <link rel="stylesheet" href="leaflet-routing-machine/leaflet-routing-machine.css" />
+    <style>
+        .location-item {
+            display: grid;
+            grid-template-columns: 100px 1fr 1fr; /* 番号、表示名、住所 */
+            gap: 5px;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+        .location-item label {
+            font-weight: bold;
+        }
+    </style>
     <script src="leaflet/leaflet.js"></script>
     <script src="leaflet-routing-machine/leaflet-routing-machine.js"></script>
     <script src="app.js" defer></script>
@@ -14,27 +29,47 @@
     <div id="map" style="height: 500px; width: 100%;"></div>
     <div id="locations">
         <h2>地点設定</h2>
-        <input type="text" id="startLocationInput" placeholder="出発地点を入力">
-        <input type="text" id="locationInput1" placeholder="到着地点1を入力">
-        <input type="text" id="locationInput2" placeholder="到着地点2を入力">
-        <input type="text" id="locationInput3" placeholder="到着地点3を入力">
-        <input type="text" id="locationInput4" placeholder="到着地点4を入力">
-        <input type="text" id="locationInput5" placeholder="到着地点5を入力">
-        <input type="text" id="locationInput6" placeholder="到着地点6を入力">
-        <input type="text" id="locationInput7" placeholder="到着地点7を入力">
-        <input type="text" id="locationInput8" placeholder="到着地点8を入力">
-        <input type="text" id="locationInput9" placeholder="到着地点9を入力">
-        <input type="text" id="locationInput10" placeholder="到着地点10を入力">
-        <input type="text" id="locationInput11" placeholder="到着地点11を入力">
-        <input type="text" id="locationInput12" placeholder="到着地点12を入力">
-        <input type="text" id="locationInput13" placeholder="到着地点13を入力">
-        <input type="text" id="locationInput14" placeholder="到着地点14を入力">
-        <input type="text" id="locationInput15" placeholder="到着地点15を入力">
+        <div class="location-item">
+            <label>出発地点:</label>
+            <input type="text" id="startDisplayNameInput" placeholder="表示名">
+            <input type="text" id="startLocationInput" placeholder="住所または地図クリック">
+        </div>
+        <h3>到着地点</h3>
+        <div id="destinationList">
+            <!-- 到着地点リストはJSで生成 -->
+        </div>
         <button id="searchRouteButton">経路検索</button>
     </div>
     <div id="results">
         <h2>移動距離</h2>
         <ul id="distanceList"></ul>
     </div>
+
+    <script>
+        // 到着地点の入力欄を動的に生成
+        const destinationList = document.getElementById('destinationList');
+        for (let i = 1; i <= 15; i++) {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('location-item');
+
+            const label = document.createElement('label');
+            label.textContent = `到着地点 ${i}:`;
+
+            const displayNameInput = document.createElement('input');
+            displayNameInput.type = 'text';
+            displayNameInput.id = `displayNameInput${i}`;
+            displayNameInput.placeholder = '表示名';
+
+            const locationInput = document.createElement('input');
+            locationInput.type = 'text';
+            locationInput.id = `locationInput${i}`;
+            locationInput.placeholder = '住所または地図クリック';
+
+            itemDiv.appendChild(label);
+            itemDiv.appendChild(displayNameInput);
+            itemDiv.appendChild(locationInput);
+            destinationList.appendChild(itemDiv);
+        }
+    </script>
 </body>
 </html>
