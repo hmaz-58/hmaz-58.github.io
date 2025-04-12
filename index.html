@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>移動距離計算アプリ</title>
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <link rel="stylesheet" href="leaflet-routing-machine/leaflet-routing-machine.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <script src="leaflet-routing-machine/leaflet-routing-machine.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <h1>移動距離計算アプリ</h1>
+    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="locations">
+        <h2>地点設定</h2>
+        <input type="text" id="startLocationInput" placeholder="出発地点を入力">
+        <input type="text" id="locationInput1" placeholder="到着地点1を入力">
+        <input type="text" id="locationInput2" placeholder="到着地点2を入力">
+        <input type="text" id="locationInput3" placeholder="到着地点3を入力">
+        <input type="text" id="locationInput4" placeholder="到着地点4を入力">
+        <input type="text" id="locationInput5" placeholder="到着地点5を入力">
+        <input type="text" id="locationInput6" placeholder="到着地点6を入力">
+        <input type="text" id="locationInput7" placeholder="到着地点7を入力">
+        <input type="text" id="locationInput8" placeholder="到着地点8を入力">
+        <input type="text" id="locationInput9" placeholder="到着地点9を入力">
+        <input type="text" id="locationInput10" placeholder="到着地点10を入力">
+        <button id="searchRouteButton">経路検索</button>
+    </div>
+    <div id="results">
+        <h2>移動距離</h2>
+        <ul id="distanceList"></ul>
+    </div>
+</body>
+</html>
