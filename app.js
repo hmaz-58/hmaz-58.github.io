@@ -6,6 +6,15 @@ let locations = [];
 let activeInputId = null; // 追加
 let routingControls = []; // 追加
 
+const redIcon = L.icon({
+    iconUrl: 'leaflet/images/marker-icon-red.png', // ローカルパスに変更
+    shadowUrl: 'leaflet/images/marker-shadow.png', // ローカルの影画像
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+});
+
 function initMap() {
     map = L.map('map').setView([35.6895, 139.6917], 10); // 東京の中心
 
@@ -52,7 +61,7 @@ function searchRoute() {
 
     const startAddress = document.getElementById('startLocationInput').value;
     const locationInputs = [];
-    for (let i = 1; i <= 10; i++) {
+    for (let i = 1; i <= 15; i++) { // 10 から 15 に変更
         const locationInput = document.getElementById(`locationInput${i}`).value;
         if (locationInput) {
             locationInputs.push({ address: locationInput, index: i }); // 場所名とインデックスを保存
@@ -65,7 +74,7 @@ function searchRoute() {
         geocodePromises.push(geocodeAddress(startAddress).then(location => {
             if (location) {
                 startLocation = location;
-                addMarker(location);
+                //addMarker(location); // 削除
             }
         }));
     }
@@ -99,8 +108,9 @@ function geocodeAddress(address) {
         });
 }
 
-function addMarker(location) {
-    const marker = L.marker(location).addTo(map);
+function addMarker(location, icon = null) {
+    const markerOptions = icon ? { icon: icon } : {};
+    const marker = L.marker(location, markerOptions).addTo(map);
     markers.push(marker);
 }
 
@@ -113,6 +123,12 @@ function calculateAndDisplayRoutes() {
     // 各到着地点に対して個別の経路を計算
     const distanceList = document.getElementById('distanceList');
     distanceList.innerHTML = ''; // clear previous distances
+
+    // 出発地点のマーカーを追加
+    const startLocationName = document.getElementById('startLocationInput').value; // 出発地点名を取得
+    const startMarker = L.marker(startLocation, redIcon).addTo(map); // マーカーを再作成
+    startMarker.bindTooltip(`${startLocationName}<br>出発地点`, { permanent: true }); // ツールチップを追加
+    markers.push(startMarker);
 
     locations.forEach(location => { // location は { coords, name } オブジェクト
         const waypoints = [L.latLng(startLocation[0], startLocation[1]), L.latLng(location.coords[0], location.coords[1])];
@@ -129,17 +145,15 @@ function calculateAndDisplayRoutes() {
             const routes = e.routes;
             if (routes && Array.isArray(routes) && routes.length > 0 && routes[0].summary) {
                 const totalDistance = routes[0].summary.totalDistance;
-                const totalTime = routes[0].summary.totalTime;
 
                 const distanceKm = (totalDistance / 1000).toFixed(2);
-                const timeHour = (totalTime / 3600).toFixed(2);
 
                 const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
-                marker.bindTooltip(`${location.name}<br>距離: ${distanceKm} km<br>時間: ${timeHour} 時間`, { permanent: true }); // ツールチップを追加
+                marker.bindTooltip(`${location.name}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
                 markers.push(marker);
 
                 const li = document.createElement('li');
-                li.textContent = `到着地点 ${location.index}: 合計距離: ${distanceKm} km, 合計時間: ${timeHour} 時間`;
+                li.textContent = `到着地点 ${location.index}: 合計距離: ${distanceKm} km`;
                 distanceList.appendChild(li);
 
             } else {
