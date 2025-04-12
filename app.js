@@ -4,6 +4,7 @@ let markers = [];
 let startLocation;
 let locations = [];
 let activeInputId = null; // 追加
+let routingControls = []; // 追加
 
 function initMap() {
     map = L.map('map').setView([35.6895, 139.6917], 10); // 東京の中心
@@ -41,17 +42,20 @@ function initMap() {
 }
 
 function searchRoute() {
-    startLocation = null;
-    locations = [];
+    // 前回の経路とマーカーをクリア
+    routingControls.forEach(control => map.removeControl(control));
+    routingControls = [];
     markers.forEach(marker => map.removeLayer(marker));
     markers = [];
+    startLocation = null;
+    locations = []; // 場所データ配列をクリア
 
     const startAddress = document.getElementById('startLocationInput').value;
     const locationInputs = [];
     for (let i = 1; i <= 10; i++) {
         const locationInput = document.getElementById(`locationInput${i}`).value;
         if (locationInput) {
-            locationInputs.push(locationInput);
+            locationInputs.push({ address: locationInput, index: i }); // 場所名とインデックスを保存
         }
     }
 
@@ -65,11 +69,10 @@ function searchRoute() {
             }
         }));
     }
-    locationInputs.forEach((address, index) => {
-        geocodePromises.push(geocodeAddress(address).then(location => {
+    locationInputs.forEach(locationInput => {
+        geocodePromises.push(geocodeAddress(locationInput.address).then(location => {
             if (location) {
-                locations.push(location);
-                //addMarker(location); // Marker is added in calculateAndDisplayRoutes
+                locations.push({ coords: location, name: locationInput.address, index: locationInput.index }); // 座標と名前を保存
             }
         }));
     });
@@ -107,35 +110,36 @@ function calculateAndDisplayRoutes() {
         return;
     }
 
-    // 既存のルーティングコントロールとマーカーを削除
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-
-    // 出発地点のマーカーを追加
-    addMarker(startLocation);
-
     // 各到着地点に対して個別の経路を計算
     const distanceList = document.getElementById('distanceList');
     distanceList.innerHTML = ''; // clear previous distances
 
-    locations.forEach((location, index) => {
-        const waypoints = [L.latLng(startLocation[0], startLocation[1]), L.latLng(location[0], location[1])];
+    locations.forEach(location => { // location は { coords, name } オブジェクト
+        const waypoints = [L.latLng(startLocation[0], startLocation[1]), L.latLng(location.coords[0], location.coords[1])];
 
         const routingControl = L.Routing.control({
             waypoints: waypoints,
             routeWhileDragging: true,
-            createMarker: function() { return null; } // suppress default markers
+            createMarker: function() { return null; }, // suppress default markers
+            show: false // コントロールパネル全体を非表示
         }).addTo(map);
+        routingControls.push(routingControl); // コントロールを配列に追加
 
         routingControl.on('routesfound', (e) => {
             const routes = e.routes;
-            // routes が存在し、配列であり、少なくとも1つの要素があるか確認
             if (routes && Array.isArray(routes) && routes.length > 0 && routes[0].summary) {
                 const totalDistance = routes[0].summary.totalDistance;
                 const totalTime = routes[0].summary.totalTime;
 
+                const distanceKm = (totalDistance / 1000).toFixed(2);
+                const timeHour = (totalTime / 3600).toFixed(2);
+
+                const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
+                marker.bindTooltip(`${location.name}<br>距離: ${distanceKm} km<br>時間: ${timeHour} 時間`, { permanent: true }); // ツールチップを追加
+                markers.push(marker);
+
                 const li = document.createElement('li');
-                li.textContent = `到着地点 ${index + 1}: 合計距離: ${(totalDistance / 1000).toFixed(2)} km, 合計時間: ${(totalTime / 3600).toFixed(2)} 時間`;
+                li.textContent = `到着地点 ${location.index}: 合計距離: ${distanceKm} km, 合計時間: ${timeHour} 時間`;
                 distanceList.appendChild(li);
 
             } else {
@@ -143,7 +147,6 @@ function calculateAndDisplayRoutes() {
                 alert('ルート計算に失敗しました。');
             }
         });
-        addMarker(location);
     });
 }
 
