@@ -11,7 +11,7 @@
     <style>
         .location-item {
             display: grid;
-            grid-template-columns: 100px 1fr 1fr; /* 番号、表示名、住所 */
+            grid-template-columns: 100px 1fr 1fr 100px; /* 番号、表示名、住所、距離 */
             gap: 5px;
             margin-bottom: 5px;
             align-items: center;
@@ -40,9 +40,7 @@
         </div>
         <button id="searchRouteButton">経路検索</button>
     </div>
-    <div id="results">
-        <h2>移動距離</h2>
-        <ul id="distanceList"></ul>
+    <div id="results" style="display:none;">
     </div>
 
     <script>
@@ -65,9 +63,14 @@
             locationInput.id = `locationInput${i}`;
             locationInput.placeholder = '住所または地図クリック';
 
+            const distanceSpan = document.createElement('span');
+            distanceSpan.id = `distance${i}`;
+            distanceSpan.textContent = '';
+
             itemDiv.appendChild(label);
             itemDiv.appendChild(displayNameInput);
             itemDiv.appendChild(locationInput);
+            itemDiv.appendChild(distanceSpan);
             destinationList.appendChild(itemDiv);
         }
     </script>
