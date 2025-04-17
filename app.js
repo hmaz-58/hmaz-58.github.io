@@ -64,10 +64,10 @@ function searchRoute() {
     const startDisplayName = document.getElementById('startDisplayNameInput').value;
     const locationInputs = [];
     for (let i = 1; i <= 15; i++) { // 10 から 15 に変更
-        const addressInput = document.getElementById(`locationInput${i}`).value;
+        const locationInput = document.getElementById(`locationInput${i}`).value;
         const displayNameInput = document.getElementById(`displayNameInput${i}`).value;
-        if (addressInput) { // 住所が入力されている場合のみ処理
-            locationInputs.push({ address: addressInput, displayName: displayNameInput, index: i }); // 表示名も保存
+        if (locationInput) { // 住所が入力されている場合のみ処理
+            locationInputs.push({ address: locationInput, displayName: displayNameInput, index: i }); // 表示名も保存
         }
     }
 
@@ -123,13 +123,16 @@ function calculateAndDisplayRoutes() {
         return;
     }
 
+    // 範囲計算のために、出発地点の座標でboundsを初期化
+    let bounds = new L.LatLngBounds([startLocation.coords]);
+
     // 各到着地点に対して個別の経路を計算
     const distanceList = document.getElementById('distanceList');
     distanceList.innerHTML = ''; // clear previous distances
 
     // 出発地点のマーカーを追加
     const startTooltipName = startLocation.displayName || startLocation.name; // 表示名優先
-    const startMarker = L.marker(startLocation.coords, { icon: redIcon }).addTo(map); // アイコン指定方法修正
+    const startMarker = L.marker(startLocation.coords, { icon: redIcon }).addTo(map); // マーカーを再作成
     startMarker.bindTooltip(`${startTooltipName}<br>出発地点`, { permanent: true }); // ツールチップを追加
     markers.push(startMarker);
 
@@ -165,7 +168,11 @@ function calculateAndDisplayRoutes() {
                 alert('ルート計算に失敗しました。');
             }
         });
+         // 範囲を広げる
+         bounds.extend(location.coords);
     });
+    // すべてのマーカーが含まれるように地図の範囲を調整
+    map.fitBounds(bounds); // app.js:169
 }
 
 window.onload = initMap;
