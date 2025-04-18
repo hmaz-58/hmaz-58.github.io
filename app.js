@@ -123,144 +123,14 @@ function calculateAndDisplayRoutes() {
         return;
     }
 
+    const distanceList = document.getElementById('distanceList');
+
     // 範囲計算のために、出発地点の座標でboundsを初期化
     let bounds = new L.LatLngBounds([startLocation.coords]);
 
     // 各到着地点に対して個別の経路を計算
     // const distanceList = document.getElementById('distanceList'); // 削除
     // distanceList.innerHTML = ''; // 削除
-
-    // 出発地点のマーカーを追加
-    const startTooltipName = startLocation.displayName || startLocation.name; // 表示名優先
-    const startMarker = L.marker(startLocation.coords, { icon: redIcon }).addTo(map); // マーカーを再作成
-    startMarker.bindTooltip(`${startTooltipName}<br>出発地点`, { permanent: true }); // ツールチップを追加
-    markers.push(startMarker);
-
-    locations.forEach(location => { // location は { coords, name, displayName, index } オブジェクト
-        const waypoints = [L.latLng(startLocation.coords[0], startLocation.coords[1]), L.latLng(location.coords[0], location.coords[1])];
-
-        const routingControl = L.Routing.control({
-            waypoints: waypoints,
-            routeWhileDragging: true,
-            createMarker: function() { return null; }, // suppress default markers
-            show: false // コントロールパネル全体を非表示
-        }).addTo(map);
-        routingControls.push(routingControl); // コントロールを配列に追加
-
-        routingControl.on('routesfound', (e) => {
-            const routes = e.routes;
-            if (routes && Array.isArray(routes) && routes.length > 0 && routes[0].summary) {
-                const totalDistance = routes[0].summary.totalDistance;
-
-                const distanceKm = (totalDistance / 1000).toFixed(2);
-                const tooltipName = location.displayName || location.name; // 表示名優先
-
-                const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
-                marker.bindTooltip(`${tooltipName}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
-                markers.push(marker);
-
-                // 対応する距離表示spanを取得してテキストを設定 (変更点)
-                const distanceSpan = document.getElementById(`distance${location.index}`);
-                if (distanceSpan) {
-                    distanceSpan.textContent = `${distanceKm} km`;
-                }
-
-            } else {
-                console.error('ルート情報が不正です:', routes);
-                alert('ルート計算に失敗しました。');
-            }
-        });
-         // 範囲を広げる
-         bounds.extend(location.coords);
-    });
-    // すべてのマーカーが含まれるように地図の範囲を調整
-    map.fitBounds(bounds);
-}
-
-window.onload = initMap;
-
-function searchRoute() {
-    // 前回の経路とマーカーをクリア
-    routingControls.forEach(control => map.removeControl(control));
-    routingControls = [];
-    markers.forEach(marker => map.removeLayer(marker));
-    markers = [];
-    startLocation = null;
-    locations = []; // 場所データ配列をクリア
-
-    const startAddress = document.getElementById('startLocationInput').value;
-    const startDisplayName = document.getElementById('startDisplayNameInput').value;
-    const locationInputs = [];
-    for (let i = 1; i <= 15; i++) { // 10 から 15 に変更
-        const locationInput = document.getElementById(`locationInput${i}`).value;
-        const displayNameInput = document.getElementById(`displayNameInput${i}`).value;
-        if (locationInput) { // 住所が入力されている場合のみ処理
-            locationInputs.push({ address: locationInput, displayName: displayNameInput, index: i }); // 場所名とインデックスを保存
-        }
-    }
-
-    // 住所から緯度経度を取得
-    const geocodePromises = [];
-    if (startAddress) {
-        geocodePromises.push(geocodeAddress(startAddress).then(locationCoords => {
-            if (locationCoords) {
-                startLocation = { coords: locationCoords, name: startAddress, displayName: startDisplayName }; // 出発地点情報
-            }
-        }));
-    }
-    locationInputs.forEach(locationInput => {
-        geocodePromises.push(geocodeAddress(locationInput.address).then(locationCoords => {
-            if (locationCoords) {
-                locations.push({ coords: locationCoords, name: locationInput.address, displayName: locationInput.displayName, index: locationInput.index }); // 座標と名前、表示名を保存
-            }
-        }));
-    });
-
-    Promise.all(geocodePromises).then(() => {
-        if (startLocation && locations.length > 0) {
-            calculateAndDisplayRoutes();
-        } else {
-            alert('出発地点と、少なくとも1つの到着地点の住所を入力してください。');
-        }
-    });
-     // 各距離表示をクリア (追加)
-     for (let i = 1; i <= 15; i++) {
-        const distanceSpan = document.getElementById(`distance${i}`);
-        if (distanceSpan) {
-            distanceSpan.textContent = '';
-        }
-    }
-}
-
-function geocodeAddress(address) {
-    return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${address}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.length > 0) {
-                return [data[0].lat, data[0].lon];
-            } else {
-                alert(`住所が見つかりませんでした: ${address}`);
-                return null;
-            }
-        });
-}
-
-// マーカー追加関数は calculateAndDisplayRoutes 内で直接行うため不要に
-// function addMarker(location, icon = null) {
-//     const markerOptions = icon ? { icon: icon } : {};
-//     const marker = L.marker(location, markerOptions).addTo(map);
-//     markers.push(marker);
-// }
-
-function calculateAndDisplayRoutes() {
-    if (!startLocation) {
-        alert("出発地点を設定してください。");
-        return;
-    }
-
-    // 各到着地点に対して個別の経路を計算
-    const distanceList = document.getElementById('distanceList');
-    //distanceList.innerHTML = ''; // clear previous distances
 
     // 出発地点のマーカーを追加
     const startTooltipName = startLocation.displayName || startLocation.name; // 表示名優先
