@@ -220,4 +220,35 @@ function calculateAndDisplayRoutes() {
     map.fitBounds(bounds);
 }
 
-window.onload = initMap;
+function downloadCSV() {
+    const locations = [];
+    for (let i = 1; i <= 15; i++) {
+        const displayName = document.getElementById(`displayNameInput${i}`).value;
+        const location = document.getElementById(`locationInput${i}`).value;
+        locations.push({ displayName: displayName, location: location });
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    locations.forEach(location => {
+        csvContent += `${location.displayName}\t${location.location}\r\n`;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    // ファイル名を入力させるプロンプトを表示
+    let filename = prompt("ファイル名を入力してください", "locations.csv");
+    if (filename == null || filename == "") {
+        filename = "locations.csv";
+    }
+    link.setAttribute("download", filename);
+    document.body.appendChild(link); // Required for FF
+
+    link.click();
+    document.body.removeChild(link);
+}
+
+window.onload = () => {
+    initMap();
+    document.getElementById('downloadCsvButton').addEventListener('click', downloadCSV);
+};
