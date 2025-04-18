@@ -49,6 +49,10 @@ function initMap() {
 }
 
 function searchRoute() {
+    // 前回の経路詳細情報をクリア
+    const routingContainers = document.querySelectorAll('.leaflet-routing-container');
+    routingContainers.forEach(container => container.remove());
+
     // 前回の経路とマーカーをクリア
     routingControls.forEach(control => map.removeControl(control));
     routingControls = [];
