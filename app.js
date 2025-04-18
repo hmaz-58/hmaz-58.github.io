@@ -27,15 +27,7 @@ function initMap() {
         // 住所入力欄 (startLocationInput または locationInputX) がアクティブな場合のみ
         if (activeInputId && (activeInputId === 'startLocationInput' || activeInputId.startsWith('locationInput'))) {
             // 逆ジオコーディング
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${event.latlng.lat}&lon=${event.latlng.lng}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.display_name) {
-                        document.getElementById(activeInputId).value = data.display_name;
-                    } else {
-                        alert('住所が見つかりませんでした。');
-                    }
-                });
+            document.getElementById(activeInputId).value = `${event.latlng.lat}, ${event.latlng.lng}`;
         }
     });
 
@@ -138,9 +130,9 @@ function calculateAndDisplayRoutes() {
     // distanceList.innerHTML = ''; // 削除
 
     // 出発地点のマーカーを追加
-    const startTooltipName = startLocation.displayName || startLocation.name; // 表示名優先
+    let startTooltipName = startLocation.displayName ? startLocation.displayName : "出発地点";
     const startMarker = L.marker(startLocation.coords, { icon: redIcon }).addTo(map); // マーカーを再作成
-    startMarker.bindTooltip(`${startTooltipName}<br>出発地点`, { permanent: true }); // ツールチップを追加
+    startMarker.bindTooltip(startTooltipName, { permanent: true }); // ツールチップを追加
     markers.push(startMarker);
 
     locations.forEach(location => { // location は { coords, name, displayName, index } オブジェクト
@@ -160,7 +152,7 @@ function calculateAndDisplayRoutes() {
                 const totalDistance = routes[0].summary.totalDistance;
 
                 const distanceKm = (totalDistance / 1000).toFixed(2);
-                const tooltipName = location.displayName || location.name; // 表示名優先
+                let tooltipName = location.displayName || `到着地点 ${location.index}`; // 表示名優先
 
                 const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
                 marker.bindTooltip(`${tooltipName}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
