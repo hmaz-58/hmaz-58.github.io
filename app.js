@@ -45,6 +45,11 @@ function initMap() {
         input.addEventListener('focus', () => {
             activeInputId = input.id;
         });
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                searchRoute();
+            }
+        });
     });
 
     // 経路検索ボタンの処理

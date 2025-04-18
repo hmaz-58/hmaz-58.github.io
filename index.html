@@ -35,11 +35,13 @@
             <input type="text" id="startDisplayNameInput" placeholder="表示名">
             <input type="text" id="startLocationInput" placeholder="住所または地図クリック">
         </div>
-        <h3>到着地点</h3>
+        <h3 style="display: flex; justify-content: space-between; align-items: center;">
+            到着地点
+            <button id="searchRouteButton">経路検索</button>
+        </h3>
         <div id="destinationList">
             <!-- 到着地点リストはJSで生成 -->
         </div>
-        <button id="searchRouteButton">経路検索</button>
     </div>
     <div id="results" style="display:none;">
     </div>
