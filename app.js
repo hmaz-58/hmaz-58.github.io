@@ -46,6 +46,47 @@ function initMap() {
 
     // 経路検索ボタンの処理
     document.getElementById('searchRouteButton').addEventListener('click', searchRoute);
+
+    // CSVファイルが選択された時の処理
+    document.getElementById('csvFile').addEventListener('change', handleFileSelect);
+}
+
+function handleFileSelect(evt) {
+    const file = evt.target.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const csv = e.target.result;
+            const lines = csv.split('\n');
+            const newLocations = [];
+
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === "") continue; // 空行をスキップ
+
+                const values = line.split('\t');
+                if (values.length >= 2) {
+                    const displayName = values[0].trim();
+                    const address = values[1].trim();
+                    newLocations.push({ displayName: displayName, address: address });
+                }
+            }
+
+            // 既存の到着地点をクリア
+            for (let i = 1; i <= 15; i++) {
+                document.getElementById(`locationInput${i}`).value = '';
+                document.getElementById(`displayNameInput${i}`).value = '';
+            }
+
+            // CSVファイルから読み込んだデータを到着地点リストに設定
+            for (let i = 0; i < Math.min(newLocations.length, 15); i++) {
+                document.getElementById(`displayNameInput${i + 1}`).value = newLocations[i].displayName;
+                document.getElementById(`locationInput${i + 1}`).value = newLocations[i].address;
+            }
+        }
+        reader.readAsText(file, 'UTF-8');
+    }
 }
 
 function searchRoute() {

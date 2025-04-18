@@ -11,7 +11,13 @@
     <link rel="stylesheet" href="leaflet-routing-machine/leaflet-routing-machine.css" />
     <style>
         h1 {
-            font-size: 1.5em; /* ラベルを小さくする */
+            font-size: 1.5em;
+        }
+        #importButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
         }
         .leaflet-routing-container {
             display: none !important;
@@ -33,6 +39,8 @@
 </head>
 <body>
     <h1>移動距離計算アプリ</h1>
+    <button id="importButton">CSVインポート</button>
+    <input type="file" id="csvFile" style="display: none;" accept=".csv">
     <div id="map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
     <div id="locations">
         <div class="location-item" style="margin-bottom: 10px;">
@@ -81,6 +89,10 @@
             itemDiv.appendChild(distanceSpan);
             destinationList.appendChild(itemDiv);
         }
+
+        document.getElementById('importButton').addEventListener('click', () => {
+            document.getElementById('csvFile').click();
+        });
     </script>
 </body>
 </html>
