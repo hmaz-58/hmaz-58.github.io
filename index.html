@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="leaflet/leaflet.css" />
     <link rel="stylesheet" href="leaflet-routing-machine/leaflet-routing-machine.css" />
     <style>
+        h1 {
+            font-size: 1.5em; /* ラベルを小さくする */
+        }
         .leaflet-routing-container {
             display: none !important;
         }
@@ -30,17 +33,16 @@
 </head>
 <body>
     <h1>移動距離計算アプリ</h1>
-    <div id="map" style="height: 500px; width: 100%;"></div>
+    <div id="map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
     <div id="locations">
-        <h2>地点設定</h2>
-        <div class="location-item">
+        <div class="location-item" style="margin-bottom: 10px;">
             <label>出発地点:</label>
             <input type="text" id="startDisplayNameInput" placeholder="表示名">
             <input type="text" id="startLocationInput" placeholder="住所または地図クリック">
-        </div>
-        <h3 style="display: flex; justify-content: space-between; align-items: center;">
-            到着地点
             <button id="searchRouteButton">経路検索</button>
+        </div>
+
+        <h3 style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
         </h3>
         <div id="destinationList">
             <!-- 到着地点リストはJSで生成 -->

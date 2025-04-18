@@ -155,14 +155,13 @@ function calculateAndDisplayRoutes() {
             if (routes && Array.isArray(routes) && routes[0].summary) {
                 const totalDistance = routes[0].summary.totalDistance;
 
-                const distanceKm = (totalDistance / 1000).toFixed(2);
-                let tooltipName = location.displayName || `到着地点 ${location.index}`; // 表示名優先
+                const distanceKm = (totalDistance / 1000).toFixed(1);
+                let tooltipName = location.displayName || `到着地点 ${location.index}`;
 
-                const marker = L.marker(location.coords).addTo(map); // マーカーを再作成
-                marker.bindTooltip(`${tooltipName}<br>距離: ${distanceKm} km`, { permanent: true }); // ツールチップを追加
+                const marker = L.marker(location.coords).addTo(map);
+                marker.bindTooltip(`${tooltipName}<br>距離: ${distanceKm} km`, { permanent: true });
                 markers.push(marker);
 
-                // 対応する距離表示spanを取得してテキストを設定 (変更点)
                 const distanceSpan = document.getElementById(`distance${location.index}`);
                 if (distanceSpan) {
                     distanceSpan.textContent = `${distanceKm} km`;
