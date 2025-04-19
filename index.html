@@ -36,11 +36,47 @@
     <script src="leaflet/leaflet.js"></script>
     <script src="leaflet-routing-machine/leaflet-routing-machine.js"></script>
     <script src="app.js" defer></script>
+    <style>
+        /* モーダルウィンドウのスタイル */
+        .modal {
+            display: none; /* 初期状態では非表示 */
+            position: fixed; /* 画面に固定 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* 半透明の背景 */
+            z-index: 1000; /* 最前面に表示 */
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <h1>移動距離計算アプリ</h1>
-    <button id="importButton">CSVインポート</button>
-    <input type="file" id="csvFile" style="display: none;" accept=".csv">
+    <button id="openModalButton" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">CSV入出力</button>
+
+    <!-- モーダルウィンドウ -->
+    <div id="csvModal" class="modal">
+        <div class="modal-content">
+            <span id="closeModalButton" style="position: absolute; top: 10px; right: 10px; cursor: pointer;">&times;</span>
+            <h3>CSV入出力</h3>
+            <div style="display: flex; flex-direction: column;">
+                <button id="downloadCsvButton">CSVファイルへエクスポート</button>
+                <input type="file" id="csvFile" style="display: none;" accept=".csv">
+                <button id="importButton">CSVファイルからインポート</button>
+            </div>
+        </div>
+    </div>
     <div id="map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
     <div id="locations">
         <div class="location-item" style="margin-bottom: 10px;">
@@ -89,11 +125,6 @@
             itemDiv.appendChild(distanceSpan);
             destinationList.appendChild(itemDiv);
         }
-
-        document.getElementById('importButton').addEventListener('click', () => {
-            document.getElementById('csvFile').click();
-        });
     </script>
-    <button id="downloadCsvButton">CSVファイルをダウンロード</button>
 </body>
 </html>

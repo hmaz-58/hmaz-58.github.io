@@ -250,5 +250,30 @@ function downloadCSV() {
 
 window.onload = () => {
     initMap();
-    document.getElementById('downloadCsvButton').addEventListener('click', downloadCSV);
+    const modal = document.getElementById('csvModal');
+    const openModalButton = document.getElementById('openModalButton');
+    const closeModalButton = document.getElementById('closeModalButton');
+    const importButton = document.getElementById('importButton');
+    const downloadCsvButton = document.getElementById('downloadCsvButton');
+    const csvFile = document.getElementById('csvFile');
+
+    openModalButton.addEventListener('click', () => {
+        modal.style.display = 'block';
+    });
+
+    closeModalButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    importButton.addEventListener('click', () => {
+        csvFile.click();
+    });
+
+    downloadCsvButton.addEventListener('click', downloadCSV);
 };
